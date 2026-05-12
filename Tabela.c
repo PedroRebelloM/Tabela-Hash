@@ -82,5 +82,13 @@ void aloca(Hash * tabela_hash, int cpf) {
 }
 
 int main(void) {
-    
+    Slot tabela[tamanho] = {0}; // Inicializa todos como ocupado = false
+    long long lista_cpfs[4096];
+
+    for(int i = 0; i < 4096; i++) {
+        insere_na_hash(tabela, lista_cpfs[i]);
+    }
+
+    printf("Total de colisoes: %lld\n", colisoes);
+    return 0;
 }
