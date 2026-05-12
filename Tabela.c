@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define tamanho (4096 + 0.2 *4096)
+#define tamanho 4917
 
 typedef struct CPF{
     long long cpf;
-    int ocupado
+    int ocupado;
 } Hash;
 
 long long colisoes =0;
@@ -41,6 +41,7 @@ void retorna_vetor(char * caminho_arquivo, long long * vetor_destino) {
 } 
 
 long long determinante(long long cpf_completo) {
+    int a11,a12,a13,a21,a22,a23,a31,a32,a33,det;
     int nove_digitos;
     int verificadores;
     nove_digitos = cpf_completo/100;
@@ -58,9 +59,10 @@ long long determinante(long long cpf_completo) {
     if(det == 0) {
         det = a11*a22*a33 + (verificadores/10)*(verificadores%10);
     }
+    return det
 }
 
-long long retorna_indice(long long determinante) {
+long long retorna_indice(long long det) {
     long long resultado = (det * 103) % tamanho;
     if(resultado < 0) {
         resultado += tamanho;
@@ -68,9 +70,9 @@ long long retorna_indice(long long determinante) {
     return (unsigned int)resultado;
 }
 
-void aloca(Hash * tabela_hash, int cpf) {
+void aloca(Hash * tabela_hash, long long cpf) {
     long long det = determinante(cpf);
-    long long indice  = retorna_indice(determinante)
+    long long indice  = retorna_indice(determinante);
 
     while(tabela_hash[indice].ocupado) {
         colisoes++;
@@ -82,11 +84,13 @@ void aloca(Hash * tabela_hash, int cpf) {
 }
 
 int main(void) {
-    Slot tabela[tamanho] = {0}; // Inicializa todos como ocupado = false
+    Hash tabela[tamanho] = {0}; 
     long long lista_cpfs[4096];
 
+    retorna_vetor("cpfs.txt", lista_cpfs);
+
     for(int i = 0; i < 4096; i++) {
-        insere_na_hash(tabela, lista_cpfs[i]);
+        aloca(tabela, lista_cpfs[i]);
     }
 
     printf("Total de colisoes: %lld\n", colisoes);
