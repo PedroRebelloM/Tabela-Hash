@@ -63,18 +63,17 @@ long long determinante(long long cpf_completo, int * verificador) {
     return det;
 }
 
-long long retorna_indice(long long det) {
-    long long resultado = (det * 103) % tamanho;
-    if(resultado < 0) {
-        resultado += tamanho;
-    }
+long long retorna_indice(long long det, long long cpf) {
+    unsigned long long teste = det ^ cpf;
+    long long resultado = (teste * 32749) % tamanho;
+    
     return (unsigned int)resultado;
 }
 
 void aloca(Hash * tabela_hash, long long cpf) {
     int verificadorAuxiliar;
     long long det = determinante(cpf, &verificadorAuxiliar);
-    long long indice  = retorna_indice(det);
+    long long indice  = retorna_indice(det, cpf);
 
     if(tabela_hash[indice].ocupado) {
         int salto = (verificadorAuxiliar % 97) + 1;
@@ -90,7 +89,17 @@ void aloca(Hash * tabela_hash, long long cpf) {
 }
 
 int main(void) {
-    Hash tabela[tamanho] = {0}; 
+    Hash *tabela = (Hash *)malloc(tamanho * sizeof(Hash));
+    
+    if (tabela == NULL) {
+        printf("Erro ao alocar memoria.\n");
+        return 1;
+    }
+    for (int i = 0; i < tamanho; i++) {
+        tabela[i].ocupado = 0;
+        tabela[i].cpf = 0;
+    }
+    
     long long lista_cpfs[4096];
 
     retorna_vetor("cpfs.txt", lista_cpfs);
@@ -100,5 +109,6 @@ int main(void) {
     }
 
     printf("Total de colisoes: %lld\n", colisoes);
+    free(tabela);
     return 0;
 }
