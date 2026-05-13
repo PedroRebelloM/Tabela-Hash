@@ -59,7 +59,7 @@ long long determinante(long long cpf_completo) {
     if(det == 0) {
         det = a11*a22*a33 + (verificadores/10)*(verificadores%10);
     }
-    return det
+    return det;
 }
 
 long long retorna_indice(long long det) {
@@ -72,7 +72,7 @@ long long retorna_indice(long long det) {
 
 void aloca(Hash * tabela_hash, long long cpf) {
     long long det = determinante(cpf);
-    long long indice  = retorna_indice(determinante);
+    long long indice  = retorna_indice(det);
 
     while(tabela_hash[indice].ocupado) {
         colisoes++;
