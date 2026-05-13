@@ -40,7 +40,7 @@ void retorna_vetor(char * caminho_arquivo, long long * vetor_destino) {
     return;
 } 
 
-long long determinante(long long cpf_completo) {
+long long determinante(long long cpf_completo, int * verificador) {
     int a11,a12,a13,a21,a22,a23,a31,a32,a33,det;
     int nove_digitos;
     int verificadores;
@@ -57,8 +57,9 @@ long long determinante(long long cpf_completo) {
     a33 = (nove_digitos / 1) % 10;
     det  = a11*a22*a33 + a12*a23*a31 + a13*a21*a32 -(a13*a22*a31 + a11*a23*a32 + a12*a21*a33); 
     if(det == 0) {
-        det = a11*a22*a33 + (verificadores/10)*(verificadores%10);
+        det = (a11 * 31) + (a22 * 37) + (a33 * 41) + (verificadores * 43);
     }
+    *verificador = verificadores;
     return det;
 }
 
@@ -71,12 +72,17 @@ long long retorna_indice(long long det) {
 }
 
 void aloca(Hash * tabela_hash, long long cpf) {
-    long long det = determinante(cpf);
+    int verificadorAuxiliar;
+    long long det = determinante(cpf, &verificadorAuxiliar);
     long long indice  = retorna_indice(det);
 
-    while(tabela_hash[indice].ocupado) {
-        colisoes++;
-        indice = (indice + 1) % tamanho;
+    if(tabela_hash[indice].ocupado) {
+        int salto = (verificadorAuxiliar % 97) + 1;
+
+        while(tabela_hash[indice].ocupado) {
+            colisoes++;
+            indice = (indice + salto) % tamanho;
+        }
     }
 
     tabela_hash[indice].cpf = cpf;
