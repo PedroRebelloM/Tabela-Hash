@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define tamanho 4919
+#define tamanho 5009
 
 typedef struct CPF{
     long long cpf;
@@ -63,22 +63,23 @@ long long determinante(long long cpf_completo, int * verificador) {
     return det;
 }
 
-long long retorna_indice(long long det, long long cpf) {
-    unsigned long long teste = det ^ cpf;
-    long long resultado = (teste * 101231831213913489) % tamanho;
-    
-    return (unsigned int)resultado;
+long long retorna_indice(long long cpf) {
+    int verificadores;
+    long long det = determinante(cpf, &verificadores);
+
+    long long parte1 = cpf / 100000;
+    long long parte2 = cpf % 100000;
+
+    unsigned long long hash = parte1 ^ parte2 ^ det;
+    return hash % tamanho;
 }
 
 void aloca(Hash * tabela_hash, long long cpf) {
     int verificadorAuxiliar;
-    long long det = determinante(cpf, &verificadorAuxiliar);
-    long long indice  = retorna_indice(det, cpf);
+    long long indice  = retorna_indice(cpf);
 
     if(tabela_hash[indice].ocupado) {
-        int salto = 97 -((cpf / 1000000) % 97);
-        if(salto ==0)salto =1;
-
+        int salto = 1 + (int)((cpf * 0x85ebca6b) % (tamanho - 1));
         while(tabela_hash[indice].ocupado) {
             colisoes++;
             indice = (indice + salto) % tamanho;
