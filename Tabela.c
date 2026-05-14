@@ -10,6 +10,7 @@ typedef struct CPF{
 } Hash;
 
 long long colisoes =0;
+long long insercoes = 0;
 
 /*
 Eu iria realizar as operações a cada leitura de linha, mas como o tempo de execução não será
@@ -80,7 +81,11 @@ long long retorna_indice(long long cpf) {
     return hash % tamanho;
 }
 
-void aloca(Hash * tabela_hash, long long cpf) {
+void aloca(Hash * tabela_hash, long long cpf, FILE * arquivo) {
+    if (arquivo == NULL) {
+        printf("O arquivo não pôde ser aberto.");
+        return;
+    }
     int verificadorAuxiliar;
     long long indice  = retorna_indice(cpf);
 
@@ -96,15 +101,28 @@ void aloca(Hash * tabela_hash, long long cpf) {
 
     tabela_hash[indice].cpf = cpf;
     tabela_hash[indice].ocupado = 1;
+    insercoes++;
+    if(insercoes % 100 == 0) {
+        printf("Insercoes: %lld\n", insercoes);
+        printf("Colisoes: %lld\n", colisoes);
+        fprintf(arquivo, "%lld; %lld\n", colisoes, insercoes);
+    }
+    if(insercoes == 4096) {
+        printf("Insercoes: %lld\n", insercoes);
+        printf("Colisoes: %lld\n", colisoes);
+        fprintf(arquivo, "%lld; %lld\n", colisoes, insercoes);
+    }
 }
 
 int main(void) {
     Hash *tabela = (Hash *)malloc(tamanho * sizeof(Hash));
-    
+    FILE * arquivo = fopen("dados.csv", "w");
     if (tabela == NULL) {
         printf("Erro ao alocar memoria.\n");
         return 1;
     }
+
+    fprintf(arquivo, "Colisões; Inserções\n");
     for (int i = 0; i < tamanho; i++) {
         tabela[i].ocupado = 0;
         tabela[i].cpf = 0;
@@ -115,10 +133,11 @@ int main(void) {
     retorna_vetor("cpfs.txt", lista_cpfs);
 
     for(int i = 0; i < 4096; i++) {
-        aloca(tabela, lista_cpfs[i]);
+        aloca(tabela, lista_cpfs[i], arquivo);
     }
 
     printf("Total de colisoes: %lld\n", colisoes);
     free(tabela);
+    fclose(arquivo);
     return 0;
 }
