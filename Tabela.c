@@ -16,7 +16,7 @@ Eu iria realizar as operações a cada leitura de linha, mas como o tempo de exe
 avaliado, optei por realizar a leitura do arquivo e guardar em um vetor.*/
 void retorna_vetor(char * caminho_arquivo, long long * vetor_destino) {
     char auxiliar[20];
-    char cpfTratado[13];
+    char cpf_tratado[13];
     int indice = 0;
     FILE * arquivo = fopen(caminho_arquivo, "r");
     if(arquivo == NULL) {
@@ -28,11 +28,11 @@ void retorna_vetor(char * caminho_arquivo, long long * vetor_destino) {
         int contador = 0;
         for(int i = 0; auxiliar[i]!=0; i++){
             if (isdigit(auxiliar[i])) {
-            cpfTratado[contador++] = auxiliar[i];
+            cpf_tratado[contador++] = auxiliar[i];
             }       
         }
-        cpfTratado[contador] = '\0';
-        vetor_destino[indice] = atoll(cpfTratado);
+        cpf_tratado[contador] = '\0';
+        vetor_destino[indice] = atoll(cpf_tratado);
         indice++;
     }
     
@@ -63,14 +63,20 @@ long long determinante(long long cpf_completo, int * verificador) {
     return det;
 }
 
+unsigned long long mistura(unsigned long long numero) {
+    numero ^= numero >> 33; // baseei esse método no murmurhash3
+    numero *= 0xff51afd7ed558ccd;
+    numero ^= numero >> 33;
+    numero *= 0xc4ceb9fe1a85ec53;
+    numero ^= numero >> 33;
+    return numero;
+}
+
 long long retorna_indice(long long cpf) {
     int verificadores;
     long long det = determinante(cpf, &verificadores);
-
-    long long parte1 = cpf / 100000;
-    long long parte2 = cpf % 100000;
-
-    unsigned long long hash = parte1 ^ parte2 ^ det;
+    unsigned long long hash_unida = det ^ cpf;
+    unsigned long long hash = mistura(hash_unida);
     return hash % tamanho;
 }
 
@@ -79,7 +85,9 @@ void aloca(Hash * tabela_hash, long long cpf) {
     long long indice  = retorna_indice(cpf);
 
     if(tabela_hash[indice].ocupado) {
-        int salto = 1 + (int)((cpf * 0x85ebca6b) % (tamanho - 1));
+        unsigned long long semente_salto = cpf ^ 0x9e3779b9; // constante de fibonacci
+        unsigned long long h2 = mistura(semente_salto);
+        int salto = 1 + (h2 % (tamanho - 1));
         while(tabela_hash[indice].ocupado) {
             colisoes++;
             indice = (indice + salto) % tamanho;
